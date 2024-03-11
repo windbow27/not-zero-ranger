@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">not-zero-ranger</string>
+    <string name="play">PLAY</string>
+    <string name="not">NOT</string>
+    <string name="quit">QUIT</string>
+    <string name="settings">SETTINGS</string>
+    <string name="zero_ranger_logo">zero_ranger_logo</string>
+    <string name="return_to_main_menu">Confirm</string>
+</resources>

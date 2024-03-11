@@ -1,0 +1,11 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Notzeroranger" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:fontFamily">@font/pixelloid_font</item>
+<!--        <item name="android:backgroundTint">@color/button_background</item>-->
+    </style>
+
+    <style name="Theme.Notzeroranger" parent="Base.Theme.Notzeroranger" />
+</resources>
