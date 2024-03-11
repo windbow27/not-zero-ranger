@@ -1,4 +1,4 @@
 package com.example.notzeroranger
 
-class MainActivity {
+class SettingsActivity {
 }
