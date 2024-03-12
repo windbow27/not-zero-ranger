@@ -33,8 +33,8 @@ open class Bullet(open var x: Float, open var y: Float, playerX: Float, playerY:
         return RectF(x,y,x+5f, y+5f)
     }
 
-    fun isOffscreen(screenHeight: Int): Boolean {
-        return y < 0 || y > screenHeight
+    fun isOffscreen(screenHeight: Int, screenWidth: Int): Boolean {
+        return y < 0 || y > screenHeight || x < 0 || x > screenWidth
     }
 }
 
@@ -46,14 +46,16 @@ class PlayerBullet(context: Context, x: Float, y: Float) : Bullet(x, y, x, 0f) {
     }
 }
 
-class SmallBullet(x: Float, y: Float, playerX: Float, playerY: Float) : Bullet(x, y, playerX, playerY) {
+class SmallBullet(context:Context, x: Float, y: Float, playerX: Float, playerY: Float) : Bullet(x, y, playerX, playerY) {
+    private val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.small_bullet)
     override fun draw(canvas: Canvas) {
-        canvas.drawCircle(x, y, 5f, paint)
+        canvas.drawBitmap(bitmap, x, y, null)
     }
 }
 
-class BigBullet(x: Float, y: Float, playerX: Float, playerY: Float) : Bullet(x, y, playerX, playerY) {
+class BigBullet(context:Context, x: Float, y: Float, playerX: Float, playerY: Float) : Bullet(x, y, playerX, playerY) {
+    private val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.big_bullet)
     override fun draw(canvas: Canvas) {
-        canvas.drawCircle(x, y, 10f, paint)
+        canvas.drawBitmap(bitmap, x, y, null)
     }
 }

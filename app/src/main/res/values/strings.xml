@@ -6,4 +6,6 @@
     <string name="settings">SETTINGS</string>
     <string name="zero_ranger_logo">zero_ranger_logo</string>
     <string name="return_to_main_menu">Confirm</string>
+    <string name="game_over">GAME OVER</string>
+    <string name="retry">Retry</string>
 </resources>

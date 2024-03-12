@@ -2,17 +2,30 @@ package com.example.notzeroranger.game
 
 import Player
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.RectF
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import androidx.core.content.res.ResourcesCompat
+import com.example.notzeroranger.GameOverActivity
 import com.example.notzeroranger.R
 import kotlin.random.Random
 
 class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
     private var gameLoopThread: GameLoopThread? = null
-    private val player = Player(context)
+    val displayMetrics = context.resources.displayMetrics
+    val screenWidth = displayMetrics.widthPixels
+    val screenHeight = displayMetrics.heightPixels
+
+    val playerX = screenWidth / 2f
+    val playerY = screenHeight * 0.9f
+
+    private val player = Player(context, playerX, playerY, 50f, 50f)
     private val enemies = mutableListOf<Enemy>()
 
     init {
@@ -46,26 +59,41 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
     }
 }
 
-class GameLoopThread(private val surfaceHolder: SurfaceHolder, context: Context, private val player: Player, private val enemies: MutableList<Enemy>) : Thread() {
+class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val context: Context, private val player: Player, private val enemies: MutableList<Enemy>) : Thread() {
     private var running = false
     private val background = BitmapFactory.decodeResource(context.resources, R.drawable.stage_background)
 
     private val enemySpawnCooldown = 2000
     private var lastEnemySpawnTime = System.currentTimeMillis()
 
+    val pixelloidTypeface = ResourcesCompat.getFont(context, R.font.pixelloid_font)
+    private val paint = Paint().apply {
+        color = Color.parseColor("#FF9800")
+        textSize = 30f
+        typeface = pixelloidTypeface
+    }
+
+    fun drawPlayerStats(canvas: Canvas) {
+        val healthText = "HP: ${(player.health / 10).toInt()}"
+        val pointsText = "Points: ${player.points}"
+
+        canvas.drawText(healthText, 20f, canvas.height - 20f, paint)
+        canvas.drawText(pointsText, canvas.width - 20f - paint.measureText(pointsText), 50f, paint)
+    }
+
     fun setRunning(isRunning: Boolean) {
         running = isRunning
     }
 
-    private fun spawnEnemies(screenWidth: Int, screenHeight: Int) {
+    private fun spawnEnemies(context: Context, screenWidth: Int, screenHeight: Int) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastEnemySpawnTime >= enemySpawnCooldown) {
             val x = Random.nextFloat() * screenWidth
             val y = 0f
             val enemy = if (Random.nextBoolean()) {
-                SmallEnemy(x, y,50f, 50f, player)
+                SmallEnemy(context, x, y,50f, 50f, player)
             } else {
-                BigEnemy(x, y, 100f, 100f, player)
+                BigEnemy(context, x, y, 100f, 100f, player)
             }
             enemies.add(enemy)
             lastEnemySpawnTime = currentTime
@@ -83,7 +111,7 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, context: Context,
                     // Update game state
                     player.moveTo(player.x, player.y)
 
-                    spawnEnemies(canvas.width, canvas.height)
+                    spawnEnemies(context, canvas.width, canvas.height)
 
                     // Player is always shooting in the same direction
                     player.shoot()
@@ -92,19 +120,33 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, context: Context,
                     player.checkCollision(enemies.filter { it.isAlive() })
 
                     // Draw the game state to the canvas
-                    enemies.forEach {
-                        it.updateBullets(canvas.height)
-                        it.drawBullets(canvas)
-                        if (it.isAlive()) {
-                            it.shoot()
-                            it.move()
-                            it.draw(canvas)
+                    val iterator = enemies.iterator()
+                    while (iterator.hasNext()) {
+                        val enemy = iterator.next()
+                        enemy.updateBullets(canvas.height, canvas.width)
+                        enemy.drawBullets(canvas)
+                        if (enemy.isAlive()) {
+                            enemy.shoot()
+                            enemy.move()
+                            enemy.draw(canvas)
                         }
-                        it.killIfOffscreen(canvas.height)
+                        enemy.checkCollision(listOf(player))
+                        enemy.killIfOffscreen(canvas.height, canvas.width)
                     }
+
                     player.draw(canvas)
+                    drawPlayerStats(canvas)
+
+                    if (!player.isAlive()) {
+                        running = false
+                    }
                 }
                 surfaceHolder.unlockCanvasAndPost(canvas)
+            }
+            if (!running) {
+                val intent = Intent(context, GameOverActivity::class.java)
+                context.startActivity(intent)
+                break
             }
         }
     }

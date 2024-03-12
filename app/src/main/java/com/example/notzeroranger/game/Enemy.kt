@@ -1,23 +1,26 @@
 package com.example.notzeroranger.game
 
 import Player
+import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.RectF
+import com.example.notzeroranger.R
+import pl.droidsonroids.gif.GifDrawable
 import kotlin.random.Random
 
-open class Enemy(x: Float, y: Float, width: Float, height: Float, val player: Player) : GameObject(x, y, width, height) {
-    open var bullet: Bullet? = null
-    private val direction = Random.nextFloat() - 0.5f;
-    val bullets = mutableListOf<Bullet>()
-    private var lastShotTime = System.currentTimeMillis()
+open class Enemy(context: Context, x: Float, y: Float, width: Float, height: Float, val player: Player) : GameObject(x, y, width, height) {
+    private val direction = Random.nextFloat() - 0.5f
+    open var point = 100
+    override var bullets = mutableListOf<Bullet>()
+    open var lastShotTime = System.currentTimeMillis()
     open val shootCooldown = 1000
+    open val enemyDrawable = GifDrawable(context.resources, R.drawable.enemy_small)
+    var pointsAdded = false
+
 
     fun draw(canvas: Canvas) {
-        val paint = Paint()
-        paint.color = Color.RED // Change this to the color you want for the enemy
-        canvas.drawRect(getBoundingBox(), paint)
+        enemyDrawable.setBounds(x.toInt(), y.toInt(), (x + width).toInt(), (y + height).toInt())
+        enemyDrawable.draw(canvas)
     }
 
     override fun getBoundingBox(): RectF {
@@ -29,31 +32,31 @@ open class Enemy(x: Float, y: Float, width: Float, height: Float, val player: Pl
         y += speed
     }
 
-    fun isAlive(): Boolean {
-        return health > 0
+    fun isOffscreen(screenHeight: Int, screenWidth: Int): Boolean {
+        return y > screenHeight || x < 0 || x > screenWidth
     }
 
-    fun isOffscreen(screenHeight: Int): Boolean {
-        return y > screenHeight
-    }
-
-    fun killIfOffscreen(screenHeight: Int) {
-        if (isOffscreen(screenHeight)) {
+    fun killIfOffscreen(screenHeight: Int, screenWidth: Int) {
+        if (isOffscreen(screenHeight, screenWidth)) {
             health = 0f
         }
     }
     open fun shoot() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastShotTime >= shootCooldown) {
-            val bullet = Bullet(x + width / 2, y + height, player.x, player.y)
+            val bullet = Bullet(x + width / 2, y + height / 2, player.x, player.y)
             bullets.add(bullet)
             lastShotTime = currentTime
         }
     }
 
-    fun updateBullets(screenHeight: Int) {
-        bullets.removeAll { it.isOffscreen(screenHeight) }
+    fun updateBullets(screenHeight: Int, screenWidth: Int) {
+        bullets.removeAll { it.isOffscreen(screenHeight, screenWidth) }
         bullets.forEach { it.update() }
+        if (!isAlive() && !pointsAdded) {
+            player.points += point
+            pointsAdded = true
+        }
     }
 
     fun drawBullets(canvas: Canvas) {
@@ -61,30 +64,33 @@ open class Enemy(x: Float, y: Float, width: Float, height: Float, val player: Pl
     }
 }
 
-class SmallEnemy(x: Float, y: Float, width: Float, height: Float, player: Player) : Enemy(x, y, width, height, player) {
+class SmallEnemy(val context: Context, x:Float, y: Float, width: Float, height: Float, player: Player) : Enemy(context, x, y, width, height, player) {
     override var speed = 2f
     override var health = 50f
-    private var lastShotTime = System.currentTimeMillis()
+    override var point = 100
+    override var lastShotTime = System.currentTimeMillis()
+    override val enemyDrawable = GifDrawable(context.resources, R.drawable.enemy_small)
 
     override fun shoot() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastShotTime >= shootCooldown) {
-            val bullet = SmallBullet(x, y, player.x, player.y)
+            val bullet = SmallBullet(context, x +  width / 2, y + height / 2, player.x, player.y)
             bullets.add(bullet)
             lastShotTime = currentTime
         }
     }
 }
 
-class BigEnemy(x: Float, y: Float, width: Float, height: Float, player: Player) : Enemy(x, y, width, height, player) {
+class BigEnemy(val context: Context, x:Float, y: Float, width: Float, height: Float, player: Player) : Enemy(context, x, y, width, height, player) {
     override var speed = 1f
     override var health = 200f
-    private var lastShotTime = System.currentTimeMillis()
-
+    override var point = 200
+    override var lastShotTime = System.currentTimeMillis()
+    override val enemyDrawable = GifDrawable(context.resources, R.drawable.enemy_big)
     override fun shoot() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastShotTime >= shootCooldown) {
-            val bullet = BigBullet(x, y, player.x, player.y)
+            val bullet = BigBullet(context, x +  width / 2, y + height / 2, player.x, player.y)
             bullets.add(bullet)
             lastShotTime = currentTime
         }
