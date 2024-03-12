@@ -5,19 +5,32 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PointF
+import android.graphics.RectF
 import com.example.notzeroranger.R
 
-open class Bullet(open var x: Float, open var y: Float, open val direction: Float) {
+open class Bullet(open var x: Float, open var y: Float, playerX: Float, playerY: Float) {
+    // Calculate direction vector
+    private val directionX = playerX - x
+    private val directionY = playerY - y
+    // Normalize direction vector
+    private val length = Math.sqrt((directionX * directionX + directionY * directionY).toDouble()).toFloat()
+    open val direction = PointF(directionX / length, directionY / length)
     open val speed = 10f
     open val damage = 10f
     open val paint = Paint().apply { color = Color.parseColor("#0000FF")}
 
     open fun update() {
-        y -= speed * direction
+        x += speed * direction.x
+        y += speed * direction.y
     }
 
     open fun draw(canvas: Canvas) {
         canvas.drawCircle(x, y, 5f, paint)
+    }
+
+    fun getBoundingBox(): RectF {
+        return RectF(x,y,x+5f, y+5f)
     }
 
     fun isOffscreen(screenHeight: Int): Boolean {
@@ -25,8 +38,7 @@ open class Bullet(open var x: Float, open var y: Float, open val direction: Floa
     }
 }
 
-// FastBullet class
-class PlayerBullet(context: Context, x: Float, y: Float, direction: Float) : Bullet(x, y, direction) {
+class PlayerBullet(context: Context, x: Float, y: Float) : Bullet(x, y, x, 0f) {
     private val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.player_bullet)
 
     override fun draw(canvas: Canvas) {
@@ -34,8 +46,13 @@ class PlayerBullet(context: Context, x: Float, y: Float, direction: Float) : Bul
     }
 }
 
-// BigBullet class
-class BigBullet(x: Float, y: Float, direction: Float) : Bullet(x, y, direction) {
+class SmallBullet(x: Float, y: Float, playerX: Float, playerY: Float) : Bullet(x, y, playerX, playerY) {
+    override fun draw(canvas: Canvas) {
+        canvas.drawCircle(x, y, 5f, paint)
+    }
+}
+
+class BigBullet(x: Float, y: Float, playerX: Float, playerY: Float) : Bullet(x, y, playerX, playerY) {
     override fun draw(canvas: Canvas) {
         canvas.drawCircle(x, y, 10f, paint)
     }

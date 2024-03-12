@@ -1,7 +1,9 @@
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.RectF
 import com.example.notzeroranger.R
 import com.example.notzeroranger.game.Bullet
+import com.example.notzeroranger.game.GameObject
 import com.example.notzeroranger.game.PlayerBullet
 import pl.droidsonroids.gif.GifDrawable
 
@@ -40,11 +42,25 @@ class Player(private val context: Context) {
     fun shoot() {
         val currentTime = System.currentTimeMillis()
         if (currentTime > lastShootTime + shootCooldown) {
-            val bulletRight = PlayerBullet(context, x + hitbox / 5 * 4 - 10, y, Math.PI.toFloat() / 2) // right bullets
-            val bulletLeft = PlayerBullet(context,x + hitbox / 5, y, Math.PI.toFloat() / 2) // left bullets
+            val bulletRight = PlayerBullet(context, x + hitbox / 5 * 4 - 10, y) // right bullets
+            val bulletLeft = PlayerBullet(context,x + hitbox / 5, y) // left bullets
             bullets.add(bulletRight)
             bullets.add(bulletLeft)
             lastShootTime = currentTime
+        }
+    }
+
+    fun checkCollision(gameObjects: List<GameObject>) {
+        val bulletIterator = bullets.iterator()
+        while (bulletIterator.hasNext()) {
+            val bullet = bulletIterator.next()
+            gameObjects.forEach { gameObject ->
+                if (RectF.intersects(bullet.getBoundingBox(), gameObject.getBoundingBox())) {
+                    // Handle collision
+                    bulletIterator.remove()
+                    gameObject.reduceHealth(bullet)
+                }
+            }
         }
     }
 
