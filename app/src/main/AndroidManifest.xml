@@ -28,6 +28,9 @@
                 <category android:name="android.intent.category.PREFERENCE" />
             </intent-filter>
         </activity>
+        <activity android:name=".GameActivity"
+            android:exported="true">
+        </activity>
     </application>
 
 </manifest>
