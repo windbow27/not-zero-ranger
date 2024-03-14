@@ -1,7 +1,7 @@
 ## Nói qua về activity và lưu trữ cho highscore  
 
-Tui dùng RecyclerView -> cần Adapter class
-Lưu HighScore trong ArrayList<HighScore> cho dễ
+Tui dùng RecyclerView -> cần Adapter class  
+Lưu HighScore trong ArrayList<HighScore> cho dễ  
 Trong internal storage, lưu ArrayList trên ở trong key 'highscoreList'  
 ### **Lưu ý**  
 do highscore array lưu trong storage dưới dạng object, nên lúc lấy ra với đọc phải dùng thêm object stream
