@@ -11,19 +11,26 @@ class GameOverActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gameover)
 
+        stopService(Intent(this, GameSound::class.java))
+
         // retry
         val retryButton = findViewById<Button>(R.id.retryButton)
         retryButton.setOnClickListener {
-            stopService(Intent(this, GameSound::class.java))
             val intent = Intent(this, GameActivity::class.java)
             startActivity(intent)
+
+            // change music
+            stopService(Intent(this, GameSound::class.java))
             startService(Intent(this, GameSound::class.java))
         }
 
         // return to title
         val returnButton = findViewById<Button>(R.id.returnButton)
         returnButton.setOnClickListener {
+
+            // change music
             stopService(Intent(this, GameSound::class.java))
+
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
