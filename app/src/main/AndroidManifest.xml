@@ -36,6 +36,9 @@
         </activity>
         <service android:name=".service.ThemeSound" />
         <service android:name=".service.GameSound" />
+        <activity android:name=".highscore.HighScoreActivity"
+            android:exported="true">
+        </activity>
     </application>
 
 </manifest>
