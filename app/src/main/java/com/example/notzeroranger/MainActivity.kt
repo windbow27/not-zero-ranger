@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         // quit game
         val quitButton: Button = findViewById(R.id.quitButton)
         quitButton.setOnClickListener {
-            finish()
+            finishAffinity()
             System.exit(0)
         }
     }
