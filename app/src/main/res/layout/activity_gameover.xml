@@ -11,7 +11,7 @@
         android:id="@+id/returnButton"
         android:layout_width="124dp"
         android:layout_height="43dp"
-        android:backgroundTint="#FF9800"
+        android:backgroundTint="@color/orange"
         android:text="@string/return_to_main_menu"
         android:textSize="16sp"
         android:textStyle="bold"

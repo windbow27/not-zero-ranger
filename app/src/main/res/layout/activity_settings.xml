@@ -8,10 +8,24 @@
     tools:context=".SettingsActivity">
 
     <Button
+        android:id="@+id/highScoreButton"
+        android:layout_width="155dp"
+        android:layout_height="41dp"
+        android:backgroundTint="@color/orange"
+        android:text="@string/high_scores"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.588" />
+
+    <Button
         android:id="@+id/returnButton"
         android:layout_width="124dp"
         android:layout_height="43dp"
-        android:backgroundTint="#FF9800"
+        android:backgroundTint="@color/orange"
         android:text="@string/return_to_main_menu"
         android:textSize="16sp"
         android:textStyle="bold"

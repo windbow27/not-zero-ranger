@@ -8,4 +8,11 @@
     <string name="return_to_main_menu">Confirm</string>
     <string name="game_over">GAME OVER</string>
     <string name="retry">Retry</string>
+    <string name="high_scores">High Scores</string>
+    <string name="score_text">%1$s</string>
+    <string name="rank_text">%1$d</string>
+    <string name="_000000000">000000000</string>
+    <string name="name">name</string>
+    <string name="_1">1</string>
+    <string name="highscore">highscore</string>
 </resources>

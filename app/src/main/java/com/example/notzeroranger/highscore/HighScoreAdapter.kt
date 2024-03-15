@@ -9,25 +9,20 @@ import com.example.notzeroranger.R
 
 
 class HighScoreAdapter(private val dataSet: ArrayList<HighScore>) : RecyclerView.Adapter<HighScoreAdapter.ViewHolder>() {
-
-    /**
-     * Provide a reference to the type of views that you are using
-     * (custom ViewHolder)
-     */
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView
         val score: TextView
         val rank: TextView
 
         init {
-            // Define click listener for the ViewHolder's View
+            // define click listener
             name = view.findViewById(R.id.name)
             score = view.findViewById(R.id.score)
             rank = view.findViewById(R.id.rank)
         }
     }
 
-    // Create new views (invoked by the layout manager)
+    // create new views
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         // Create a new view, which defines the UI of the list item
         val view = LayoutInflater.from(viewGroup.context)
@@ -36,23 +31,24 @@ class HighScoreAdapter(private val dataSet: ArrayList<HighScore>) : RecyclerView
         return ViewHolder(view)
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
+    // replace the contents of a view
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
-        viewHolder.name.text = dataSet[position].name
-        viewHolder.score.text = dataSet[position].score.toString() + " "
-        viewHolder.rank.text = (position+1).toString()
-        viewHolder.rank.setTextColor( when(position) {
-            0 -> Color.parseColor("#ffffff")
-            1 -> Color.parseColor("#fceeb6")
-            2 -> Color.parseColor("#FB621B")
-            else -> Color.parseColor("#49b393")
-        })
+        dataSet[position].let { highScore ->
+            viewHolder.name.text = highScore.name
+            viewHolder.score.text = viewHolder.itemView.context.getString(R.string.score_text, highScore.score.toString())
+            viewHolder.rank.text = (position + 1).toString()
+            viewHolder.rank.setTextColor(
+                when (position) {
+                    0 -> Color.parseColor("#FFD700")
+                    1 -> Color.parseColor("#C0C0C0")
+                    2 -> Color.parseColor("#FB621B")
+                    else -> Color.parseColor("#B87333")
+                }
+            )
+        }
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
+    // Return the size of dataset
     override fun getItemCount() = dataSet.size
 
 }

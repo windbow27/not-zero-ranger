@@ -68,17 +68,25 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
 
     val pixelloidTypeface = ResourcesCompat.getFont(context, R.font.pixelloid_font)
     private val paint = Paint().apply {
-        color = Color.parseColor("#FF9800")
-        textSize = 30f
+        color = context.resources.getColor(R.color.orange, null)
+        textSize = 32f
         typeface = pixelloidTypeface
+        style = Paint.Style.FILL_AND_STROKE
+        strokeWidth = 2f
+        setShadowLayer(1f, 0f, 0f, Color.BLACK)
     }
 
-    fun drawPlayerStats(canvas: Canvas) {
-        val healthText = "HP: ${(player.health / 10).toInt()}"
-        val pointsText = "Points: ${player.points}"
+    private val healthBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.health)
 
-        canvas.drawText(healthText, 20f, canvas.height - 20f, paint)
-        canvas.drawText(pointsText, canvas.width - 20f - paint.measureText(pointsText), 50f, paint)
+    private fun drawPlayerStats(canvas: Canvas) {
+        val health = (player.health / 10).toInt()
+        val points = player.points.toString()
+
+        for (i in 0 until health) {
+            canvas.drawBitmap(healthBitmap, 20f + i * healthBitmap.width, canvas.height - 20f - healthBitmap.height, null)
+        }
+
+        canvas.drawText(points, canvas.width - 20f - paint.measureText(points), 50f, paint)
     }
 
     fun setRunning(isRunning: Boolean) {
