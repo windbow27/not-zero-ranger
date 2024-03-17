@@ -17,19 +17,19 @@ open class GameObject(var x: Float, var y: Float, open var width: Float, var hei
         Log.d("GameObject", "Health: $health")
     }
 
-    fun isAlive(): Boolean {
+    open fun isAlive(): Boolean {
         return health > 0
     }
 
     open fun checkCollision(gameObjects: List<GameObject>) {
-        val bulletIterator = bullets.iterator()
-        while (bulletIterator.hasNext()) {
-            val bullet = bulletIterator.next()
-            gameObjects.forEach { gameObject ->
+        bullets.removeIf { bullet ->
+            gameObjects.any { gameObject ->
                 if (RectF.intersects(bullet.getBoundingBox(), gameObject.getBoundingBox())) {
                     // Handle collision
-                    bulletIterator.remove()
                     gameObject.reduceHealth(bullet)
+                    true
+                } else {
+                    false
                 }
             }
         }

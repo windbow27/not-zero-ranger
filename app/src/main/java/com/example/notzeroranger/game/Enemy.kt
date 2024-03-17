@@ -18,13 +18,13 @@ open class Enemy(context: Context, x: Float, y: Float, width: Float, height: Flo
     var pointsAdded = false
 
 
+    private fun isOffscreen(screenHeight: Int, screenWidth: Int): Boolean {
+        return y + height < 0 || y > screenHeight || x + width < 0 || x > screenWidth
+    }
+
     fun draw(canvas: Canvas) {
         enemyDrawable.setBounds(x.toInt(), y.toInt(), (x + width).toInt(), (y + height).toInt())
         enemyDrawable.draw(canvas)
-    }
-
-    override fun getBoundingBox(): RectF {
-        return RectF(x, y, x + width, y + height)
     }
 
     fun move() {
@@ -32,15 +32,12 @@ open class Enemy(context: Context, x: Float, y: Float, width: Float, height: Flo
         y += speed
     }
 
-    fun isOffscreen(screenHeight: Int, screenWidth: Int): Boolean {
-        return y > screenHeight || x < 0 || x > screenWidth
-    }
-
     fun killIfOffscreen(screenHeight: Int, screenWidth: Int) {
         if (isOffscreen(screenHeight, screenWidth)) {
             health = 0f
         }
     }
+
     open fun shoot() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastShotTime >= shootCooldown) {
@@ -50,11 +47,16 @@ open class Enemy(context: Context, x: Float, y: Float, width: Float, height: Flo
         }
     }
 
+    override fun getBoundingBox(): RectF {
+        return RectF(x, y, x + width, y + height)
+    }
+
+
     fun updateBullets(screenHeight: Int, screenWidth: Int) {
         bullets.removeAll { it.isOffscreen(screenHeight, screenWidth) }
         bullets.forEach { it.update() }
         if (!isAlive() && !pointsAdded) {
-            player.points += point
+            player.addPoints(point)
             pointsAdded = true
         }
     }

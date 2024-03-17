@@ -1,6 +1,7 @@
 package com.example.notzeroranger.game
 
 import Player
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -18,13 +19,11 @@ import kotlin.random.Random
 
 class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
     private var gameLoopThread: GameLoopThread? = null
-    val displayMetrics = context.resources.displayMetrics
-    val screenWidth = displayMetrics.widthPixels
-    val screenHeight = displayMetrics.heightPixels
-
-    val playerX = screenWidth / 2f
-    val playerY = screenHeight * 0.9f
-
+    private val displayMetrics = context.resources.displayMetrics
+    private val screenWidth = displayMetrics.widthPixels
+    private val screenHeight = displayMetrics.heightPixels
+    private  val playerX = screenWidth / 2f
+    private val playerY = screenHeight * 0.9f
     private val player = Player(context, playerX, playerY, 50f, 50f)
     private val enemies = mutableListOf<Enemy>()
 
@@ -53,6 +52,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         player.moveTo(event?.x ?: 0f, event?.y ?: 0f)
         return true
@@ -62,11 +62,12 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val context: Context, private val player: Player, private val enemies: MutableList<Enemy>) : Thread() {
     private var running = false
     private val background = BitmapFactory.decodeResource(context.resources, R.drawable.stage_background)
-
-    private val enemySpawnCooldown = 2000
-    private var lastEnemySpawnTime = System.currentTimeMillis()
-
-    val pixelloidTypeface = ResourcesCompat.getFont(context, R.font.pixelloid_font)
+    private val smallEnemyPoints = 100
+    private val bigEnemyPoints = 200
+    private var lastWaveSpawnTime = System.currentTimeMillis()
+    private val waveSpawnCooldown = 5600
+    private val healthBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.health)
+    private val pixelloidTypeface = ResourcesCompat.getFont(context, R.font.pixelloid_font)
     private val paint = Paint().apply {
         color = context.resources.getColor(R.color.orange, null)
         textSize = 32f
@@ -76,11 +77,13 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
         setShadowLayer(1f, 0f, 0f, Color.BLACK)
     }
 
-    private val healthBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.health)
+    fun setRunning(isRunning: Boolean) {
+        running = isRunning
+    }
 
     private fun drawPlayerStats(canvas: Canvas) {
         val health = (player.health / 10).toInt()
-        val points = player.points.toString()
+        val points = player.getPoints().toString()
 
         for (i in 0 until health) {
             canvas.drawBitmap(healthBitmap, 20f + i * healthBitmap.width, canvas.height - 20f - healthBitmap.height, null)
@@ -89,22 +92,28 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
         canvas.drawText(points, canvas.width - 20f - paint.measureText(points), 50f, paint)
     }
 
-    fun setRunning(isRunning: Boolean) {
-        running = isRunning
-    }
-
     private fun spawnEnemies(context: Context, screenWidth: Int, screenHeight: Int) {
         val currentTime = System.currentTimeMillis()
-        if (currentTime - lastEnemySpawnTime >= enemySpawnCooldown) {
-            val x = Random.nextFloat() * screenWidth
-            val y = 0f
-            val enemy = if (Random.nextBoolean()) {
-                SmallEnemy(context, x, y,50f, 50f, player)
-            } else {
-                BigEnemy(context, x, y, 100f, 100f, player)
+        if (currentTime - lastWaveSpawnTime >= waveSpawnCooldown) {
+            val totalPoints = (800..1200).random()
+            var remainingPoints = totalPoints
+
+            while (remainingPoints >= smallEnemyPoints) {
+                val x = Random.nextFloat() * screenWidth
+                val y = Random.nextFloat() * screenHeight / 6
+
+                val enemy = if (remainingPoints >= bigEnemyPoints && Random.nextBoolean()) {
+                    remainingPoints -= bigEnemyPoints
+                    BigEnemy(context, x, y, 100f, 100f, player)
+                } else {
+                    remainingPoints -= smallEnemyPoints
+                    SmallEnemy(context, x, y, 50f, 50f, player)
+                }
+
+                enemies.add(enemy)
             }
-            enemies.add(enemy)
-            lastEnemySpawnTime = currentTime
+
+            lastWaveSpawnTime = currentTime
         }
     }
 

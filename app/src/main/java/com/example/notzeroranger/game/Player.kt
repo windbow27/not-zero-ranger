@@ -8,20 +8,22 @@ import com.example.notzeroranger.game.PlayerBullet
 import pl.droidsonroids.gif.GifDrawable
 
 class Player(private val context: Context, x: Float, y: Float, width: Float, height: Float): GameObject(x, y, width, height) {
-    override var health: Float = 30f
-    override var speed: Float = 20f
-    var points: Int = 0
+    private var points: Int = 0
     private val shootCooldown = 75
-
     private val screenWidth = context.resources.displayMetrics.widthPixels
     private val screenHeight = context.resources.displayMetrics.heightPixels
     private val playerDrawable: GifDrawable = GifDrawable(context.resources, R.drawable.player_gif)
-
     private var lastShootTime = System.currentTimeMillis()
     override var bullets = mutableListOf<Bullet>()
+    override var health: Float = 30f
+    override var speed: Float = 20f
 
     fun addPoints(points: Int) {
         this.points += points
+    }
+
+    fun getPoints(): Int {
+        return points
     }
 
     fun moveTo(targetX: Float, targetY: Float) {
