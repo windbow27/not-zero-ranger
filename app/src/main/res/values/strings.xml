@@ -14,5 +14,6 @@
     <string name="_000000000">000000000</string>
     <string name="name">name</string>
     <string name="_1">1</string>
-    <string name="highscore">highscore</string>
+    <string name="highscore">HIGHSCORE</string>
+    <string name="username">username</string>
 </resources>
