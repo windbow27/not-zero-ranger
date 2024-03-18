@@ -165,6 +165,7 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
                         values.put("name", Player.name)
                         values.put("score", player.getPoints())
                         db.insert(HighScore.PlayerEntry.TABLE_NAME, "", values)
+                        //db.delete(HighScore.PlayerEntry.TABLE_NAME,null,null)
                         db.close()
                     }
                 }

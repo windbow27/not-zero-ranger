@@ -85,12 +85,13 @@
         android:id="@+id/nameLayout"
         android:layout_width="110dp"
         android:layout_height="55dp"
-        android:layout_marginBottom="292dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.346"
-        app:layout_constraintStart_toEndOf="@+id/playButton">
+        app:layout_constraintStart_toEndOf="@+id/playButton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.565">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/name_input"
