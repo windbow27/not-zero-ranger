@@ -2,6 +2,7 @@ package com.example.notzeroranger.game
 
 import Player
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -15,6 +16,8 @@ import android.view.SurfaceView
 import androidx.core.content.res.ResourcesCompat
 import com.example.notzeroranger.GameOverActivity
 import com.example.notzeroranger.R
+import com.example.notzeroranger.database.DemoDbHeper
+import com.example.notzeroranger.database.HighScore
 import kotlin.random.Random
 
 class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
@@ -156,6 +159,13 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
 
                     if (!player.isAlive()) {
                         running = false
+                        val dbHelper = DemoDbHeper(context)
+                        val db = dbHelper.writableDatabase
+                        val values = ContentValues()
+                        values.put("name", Player.name)
+                        values.put("score", player.getPoints())
+                        db.insert(HighScore.PlayerEntry.TABLE_NAME, "", values)
+                        db.close()
                     }
                 }
                 surfaceHolder.unlockCanvasAndPost(canvas)

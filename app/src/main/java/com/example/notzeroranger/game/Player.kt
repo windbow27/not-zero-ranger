@@ -18,6 +18,7 @@ class Player(private val context: Context, x: Float, y: Float, width: Float, hei
     override var health: Float = 30f
     override var speed: Float = 20f
 
+
     fun addPoints(points: Int) {
         this.points += points
     }
@@ -65,5 +66,8 @@ class Player(private val context: Context, x: Float, y: Float, width: Float, hei
         playerDrawable.draw(canvas)
 
         bullets.forEach { it.draw(canvas) }
+    }
+    companion object {
+        var name:String = ""
     }
 }
