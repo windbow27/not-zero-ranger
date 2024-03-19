@@ -5,7 +5,7 @@ import android.media.MediaPlayer
 import android.os.IBinder
 import com.example.notzeroranger.R
 
-class ThemeSound : SoundService() {
+class GameOverSound : SoundService() {
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -13,11 +13,8 @@ class ThemeSound : SoundService() {
     override fun onCreate() {
         super.onCreate()
         // Create MediaPlayer and start playing the sound
-        mediaPlayer = MediaPlayer.create(this, R.raw.theme)
-
-        // Set looping to true for continuous play
-        mediaPlayer?.isLooping = true
-
+        mediaPlayer = MediaPlayer.create(this, R.raw.gameover)
+        mediaPlayer?.isLooping = true // Set looping to true for continuous play
         mediaPlayer?.start()
     }
 
@@ -26,5 +23,6 @@ class ThemeSound : SoundService() {
         // Release the MediaPlayer when the service is destroyed
         mediaPlayer?.stop()
         mediaPlayer?.release()
+        mediaPlayer = null
     }
 }

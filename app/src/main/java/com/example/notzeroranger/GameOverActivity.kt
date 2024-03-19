@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import com.example.notzeroranger.service.GameOverSound
 import com.example.notzeroranger.service.GameSound
 
 class GameOverActivity : AppCompatActivity() {
@@ -12,6 +13,7 @@ class GameOverActivity : AppCompatActivity() {
         setContentView(R.layout.activity_gameover)
 
         stopService(Intent(this, GameSound::class.java))
+        startService(Intent(this, GameOverSound::class.java))
 
         // retry
         val retryButton = findViewById<Button>(R.id.retryButton)
@@ -20,7 +22,7 @@ class GameOverActivity : AppCompatActivity() {
             startActivity(intent)
 
             // change music
-            stopService(Intent(this, GameSound::class.java))
+            stopService(Intent(this, GameOverSound::class.java))
             startService(Intent(this, GameSound::class.java))
         }
 
@@ -29,7 +31,7 @@ class GameOverActivity : AppCompatActivity() {
         returnButton.setOnClickListener {
 
             // change music
-            stopService(Intent(this, GameSound::class.java))
+            stopService(Intent(this, GameOverSound::class.java))
 
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)

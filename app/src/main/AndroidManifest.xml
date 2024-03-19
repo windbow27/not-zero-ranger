@@ -44,6 +44,7 @@
             android:name=".GameOverActivity"
             android:exported="true"></activity>
 
+        <service android:name=".service.GameOverSound" />
         <service android:name=".service.ThemeSound" />
         <service android:name=".service.GameSound" />
 
