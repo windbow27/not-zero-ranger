@@ -6,12 +6,15 @@ import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Spinner
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.example.notzeroranger.highscore.HighScoreActivity
 
 class SettingsActivity : AppCompatActivity() {
@@ -39,24 +42,41 @@ class SettingsActivity : AppCompatActivity() {
         soundControl()
     }
 
-    fun spinnerControl() {
-        // Data for the spinner
+    class CustomArrayAdapter(context: Context, layout: Int, list: Array<String>, private val color: Int) : ArrayAdapter<String>(context, layout, list) {
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = super.getView(position, convertView, parent)
+            val textView = view.findViewById<TextView>(android.R.id.text1)
+            textView.setTextColor(color)
+            return view
+        }
+
+        override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = super.getDropDownView(position, convertView, parent)
+            val textView = view.findViewById<TextView>(android.R.id.text1)
+            textView.setTextColor(color)
+            textView.setBackgroundColor(ContextCompat.getColor(context, R.color.black))
+            textView.textAlignment = View.TEXT_ALIGNMENT_CENTER
+            return view
+        }
+    }
+
+    private fun spinnerControl() {
+        // data for the spinner
         val spinnerItems = arrayOf("1", "2", "3", "4", "5")
 
-        // Initialize the spinner
+        // initialize the spinner
         val spinner: Spinner = findViewById(R.id.spinner)
 
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        val adapter = ArrayAdapter(this,
-            android.R.layout.simple_spinner_item, spinnerItems)
+        // create an ArrayAdapter using the string array and a default spinner layout
+        val color = ContextCompat.getColor(this, R.color.white)
+        val adapter = CustomArrayAdapter(this, android.R.layout.simple_spinner_item, spinnerItems, color)
 
-        // Specify the layout to use when the list of choices appears
+        // specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        // Apply the adapter to the spinner
+        // apply the adapter to the spinner
         spinner.adapter = adapter
 
-        // Optional: Set a listener to respond to spinner item selections
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -66,23 +86,22 @@ class SettingsActivity : AppCompatActivity() {
             ) {
                 //
             }
-
             override fun onNothingSelected(parent: AdapterView<*>) {
                 // Do nothing
             }
         }
     }
 
-    fun soundControl() {
+    private fun soundControl() {
         val volumeSeekbar = findViewById<SeekBar>(R.id.soundBar)
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager;
-        volumeSeekbar.setMax(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
-        volumeSeekbar.progress = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        volumeSeekbar.setMax(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC))
+        volumeSeekbar.progress = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
 
 
         volumeSeekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
