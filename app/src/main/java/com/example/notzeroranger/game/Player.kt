@@ -5,6 +5,7 @@ import com.example.notzeroranger.game.Bullet
 import com.example.notzeroranger.game.Enemy
 import com.example.notzeroranger.game.GameObject
 import com.example.notzeroranger.game.PlayerBullet
+import com.example.notzeroranger.setting.HealthManger
 import pl.droidsonroids.gif.GifDrawable
 
 class Player(private val context: Context, x: Float, y: Float, width: Float, height: Float): GameObject(x, y, width, height) {
@@ -15,7 +16,7 @@ class Player(private val context: Context, x: Float, y: Float, width: Float, hei
     private val playerDrawable: GifDrawable = GifDrawable(context.resources, R.drawable.player_gif)
     private var lastShootTime = System.currentTimeMillis()
     override var bullets = mutableListOf<Bullet>()
-    override var health: Float = 30f
+    override var health: Float = HealthManger.getHealth()
     override var speed: Float = 20f
 
 

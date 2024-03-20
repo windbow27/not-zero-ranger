@@ -16,6 +16,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.notzeroranger.highscore.HighScoreActivity
+import com.example.notzeroranger.setting.HealthManger
 
 class SettingsActivity : AppCompatActivity() {
     private lateinit var audioManager: AudioManager
@@ -77,17 +78,20 @@ class SettingsActivity : AppCompatActivity() {
         // apply the adapter to the spinner
         spinner.adapter = adapter
 
+        // set spinner selection by current health
+        spinner.setSelection(HealthManger.getHealth().toInt()/10 -1)
+
+        println("Current selection: " + HealthManger.getHealth().toInt()/10)
+        println("Current health: " + HealthManger.getHealth())
+
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                //
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val health = parent?.getItemAtPosition(position).toString()
+                println("Health: " + health)
+                HealthManger.setHealth(health.toInt())
             }
             override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing
+
             }
         }
     }
