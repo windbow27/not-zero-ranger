@@ -28,7 +28,12 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
     private  val playerX = screenWidth / 2f
     private val playerY = screenHeight * 0.9f
     private val player = Player(context, playerX, playerY, 50f, 50f)
-    private val enemies = mutableListOf<Enemy>()
+
+
+    companion object {
+       var enemies = mutableListOf<Enemy>()
+    }
+
 
     init {
         holder.addCallback(this)
