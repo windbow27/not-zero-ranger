@@ -7,7 +7,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.notzeroranger.game.GameView
 import com.example.notzeroranger.game.GameView.Companion.enemies
@@ -16,19 +15,17 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var gameView: GameView
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
-    private var isAccelerometerSensorAvailable: Boolean = false
     private var isItNotFirstTime: Boolean = false
-    private var currentX: Float = 0f
-    private var currentY: Float = 0f
-    private var currentZ: Float = 0f
     private var lastX: Float = 0f
     private var lastY: Float = 0f
     private var lastZ: Float = 0f
     private var differenceX: Float = 0f
     private var differenceY: Float = 0f
     private var differenceZ: Float = 0f
-    private var shakeThreshhold: Float = 5f
-    private var shake_id: Int = 0
+    private var shakeThreshold: Float = 5f
+    private var sensorChangeCount = 2 // bomb count
+    private var lastShakeTime: Long = 0
+    private val shakeCooldown: Long = 5000
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -53,12 +50,20 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             differenceY = Math.abs(lastY - currentY)
             differenceZ = Math.abs(lastZ - currentZ)
 
-            if (differenceX  > shakeThreshhold && differenceY > shakeThreshhold ||
-                differenceX  > shakeThreshhold && differenceZ > shakeThreshhold ||
-                differenceY  > shakeThreshhold && differenceZ > shakeThreshhold) {
+            if (differenceX  > shakeThreshold && differenceY > shakeThreshold ||
+                differenceX  > shakeThreshold && differenceZ > shakeThreshold ||
+                differenceY  > shakeThreshold && differenceZ > shakeThreshold) {
                 Log.i("Shake","Shake it off!")
-                enemies.clear()
-                shake_id++
+                if (sensorChangeCount > 0) {
+                    if (System.currentTimeMillis() - lastShakeTime > shakeCooldown) {
+                        enemies.clear()
+                        sensorChangeCount--
+                        lastShakeTime = System.currentTimeMillis()
+                    }
+                }
+                if (sensorChangeCount < 0) {
+                    sensorChangeCount = 0
+                }
             }
         }
 
@@ -79,6 +84,10 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
+    }
+
+    fun getSensorChangeCount(): Int {
+        return sensorChangeCount
     }
 
 }

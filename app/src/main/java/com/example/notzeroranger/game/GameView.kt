@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
@@ -14,6 +15,7 @@ import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.core.content.res.ResourcesCompat
+import com.example.notzeroranger.GameActivity
 import com.example.notzeroranger.GameOverActivity
 import com.example.notzeroranger.R
 import com.example.notzeroranger.database.DemoDbHeper
@@ -40,6 +42,11 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
+        enemies.clear()
+        player.clearBullets()
+        for (enemy in enemies) {
+            enemy.clearBullets()
+        }
         gameLoopThread = GameLoopThread(holder, context, player, enemies)
         gameLoopThread?.setRunning(true)
         gameLoopThread?.start()
@@ -69,12 +76,31 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 
 class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val context: Context, private val player: Player, private val enemies: MutableList<Enemy>) : Thread() {
     private var running = false
+    private val displayMetrics = context.resources.displayMetrics
     private val background = BitmapFactory.decodeResource(context.resources, R.drawable.stage_background)
     private val smallEnemyPoints = 100
     private val bigEnemyPoints = 200
     private var lastWaveSpawnTime = System.currentTimeMillis()
     private val waveSpawnCooldown = 5600
-    private val healthBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.health)
+
+    private val originalHealthBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.health)
+    private val originalBlankBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.blank)
+    private val bitmapWidth = displayMetrics.widthPixels / 16
+    private val healthBitmapHeight = bitmapWidth * originalHealthBitmap.height / originalHealthBitmap.width
+    private val blankBitmapHeight = bitmapWidth * originalBlankBitmap.height / originalBlankBitmap.width
+
+    private val healthBitmap = Bitmap.createScaledBitmap(
+        originalHealthBitmap,
+        bitmapWidth,
+        healthBitmapHeight,
+        true
+    )
+    private val blankBitmap = Bitmap.createScaledBitmap(
+        originalBlankBitmap,
+        bitmapWidth,
+        blankBitmapHeight,
+        true
+    )
     private val pixelloidTypeface = ResourcesCompat.getFont(context, R.font.pixelloid_font)
     private val paint = Paint().apply {
         color = context.resources.getColor(R.color.orange, null)
@@ -90,11 +116,16 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
     }
 
     private fun drawPlayerStats(canvas: Canvas) {
+        val gameActivity = context as GameActivity
         val health = (player.health / 10).toInt()
         val points = player.getPoints().toString()
 
         for (i in 0 until health) {
-            canvas.drawBitmap(healthBitmap, 20f + i * healthBitmap.width, canvas.height - 20f - healthBitmap.height, null)
+            canvas.drawBitmap(healthBitmap, 20f + i * healthBitmap.width, 20f, null)
+        }
+
+        for (i in 0 until gameActivity.getSensorChangeCount()) {
+            canvas.drawBitmap(blankBitmap, 20f + i * blankBitmap.width, 60f, null)
         }
 
         canvas.drawText(points, canvas.width - 20f - paint.measureText(points), 50f, paint)

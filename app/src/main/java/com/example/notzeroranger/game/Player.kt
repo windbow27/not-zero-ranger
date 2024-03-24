@@ -46,6 +46,10 @@ class Player(private val context: Context, x: Float, y: Float, width: Float, hei
         }
     }
 
+    fun clearBullets() {
+        bullets.clear()
+    }
+
     fun shoot() {
         val currentTime = System.currentTimeMillis()
         if (currentTime > lastShootTime + shootCooldown) {

@@ -38,6 +38,10 @@ open class Enemy(context: Context, x: Float, y: Float, width: Float, height: Flo
         }
     }
 
+    fun clearBullets() {
+        bullets.clear()
+    }
+
     open fun shoot() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastShotTime >= shootCooldown) {
