@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.notzeroranger.game.GameView
 import com.example.notzeroranger.game.GameView.Companion.enemies
+import kotlin.math.abs
 
 class GameActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var gameView: GameView
@@ -46,9 +47,9 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         val currentZ = event.values[2]
 
         if(isItNotFirstTime) {
-            differenceX = Math.abs(lastX - currentX)
-            differenceY = Math.abs(lastY - currentY)
-            differenceZ = Math.abs(lastZ - currentZ)
+            differenceX = abs(lastX - currentX)
+            differenceY = abs(lastY - currentY)
+            differenceZ = abs(lastZ - currentZ)
 
             if (differenceX  > shakeThreshold && differenceY > shakeThreshold ||
                 differenceX  > shakeThreshold && differenceZ > shakeThreshold ||

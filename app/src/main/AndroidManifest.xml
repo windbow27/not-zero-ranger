@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+
+    <uses-permission android:name="android.permission.INTERNET" />
     <permission
         android:name="com.example.notzeroranger.PERMISSION"/>
     <application
@@ -18,7 +19,7 @@
             android:name=".database.MyContentProvider"
             android:authorities="com.example.notzeroranger"
             android:enabled="true"
-            android:exported="true"></provider>
+            android:exported="false" />
 
         <activity
             android:name=".MainActivity"
@@ -29,6 +30,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".SettingsActivity"
             android:exported="true">
@@ -38,12 +40,13 @@
                 <category android:name="android.intent.category.PREFERENCE" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".GameActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
         <activity
             android:name=".GameOverActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
 
         <service android:name=".service.GameOverSound" />
         <service android:name=".service.ThemeSound" />
@@ -51,7 +54,11 @@
 
         <activity
             android:name=".highscore.HighScoreActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
+
+        <activity
+            android:name=".AboutActivity"
+            android:exported="true" />
     </application>
 
 </manifest>

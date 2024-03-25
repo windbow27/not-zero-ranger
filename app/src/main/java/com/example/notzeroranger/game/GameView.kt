@@ -209,6 +209,7 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
             }
             if (!running) {
                 val intent = Intent(context, GameOverActivity::class.java)
+                intent.putExtra("SCORE", player.getPoints())
                 context.startActivity(intent)
                 break
             }
