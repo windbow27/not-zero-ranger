@@ -77,7 +77,12 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val context: Context, private val player: Player, private val enemies: MutableList<Enemy>) : Thread() {
     private var running = false
     private val displayMetrics = context.resources.displayMetrics
-    private val background = BitmapFactory.decodeResource(context.resources, R.drawable.stage_background)
+
+    private val background1 = BitmapFactory.decodeResource(context.resources, R.drawable.stage_background)
+    private val background2 = BitmapFactory.decodeResource(context.resources, R.drawable.stage_background)
+    private var bg1y = 0f
+    private var bg2y = (-displayMetrics.heightPixels).toFloat()
+
     private val smallEnemyPoints = 100
     private val bigEnemyPoints = 200
     private var lastWaveSpawnTime = System.currentTimeMillis()
@@ -161,8 +166,21 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
             val canvas = surfaceHolder.lockCanvas(null)
             if (canvas != null) {
                 synchronized(surfaceHolder) {
-                    // Clear the canvas
-                    canvas.drawBitmap(background, null, RectF(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat()), null)
+                    // Clear the canvas by drawing the moving background images
+                    canvas.drawBitmap(background1, null, RectF(0f, bg1y, canvas.width.toFloat(), bg1y + canvas.height), null)
+                    canvas.drawBitmap(background2, null, RectF(0f, bg2y, canvas.width.toFloat(), bg2y + canvas.height), null)
+
+                    // Move the backgrounds
+                    bg1y += displayMetrics.heightPixels * 0.01f
+                    bg2y += displayMetrics.heightPixels * 0.01f
+
+                    // If a background has moved off the screen, reset its position
+                    if (bg1y > canvas.height) {
+                        bg1y = -canvas.height.toFloat()
+                    }
+                    if (bg2y > canvas.height) {
+                        bg2y = -canvas.height.toFloat()
+                    }
 
                     // Update game state
                     player.moveTo(player.x, player.y)
