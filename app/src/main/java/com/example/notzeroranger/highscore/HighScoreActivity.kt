@@ -14,10 +14,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.notzeroranger.MainActivity
 import com.example.notzeroranger.SettingsActivity
 import com.example.notzeroranger.database.DemoDbHeper
-import com.example.notzeroranger.service.GameSound
 import com.example.notzeroranger.service.PlayerScore
 import com.example.notzeroranger.service.RetrofitInstance
 import retrofit2.Call
