@@ -1,10 +1,12 @@
 package com.example.notzeroranger.highscore
 
+import android.annotation.SuppressLint
 import com.example.notzeroranger.R
 import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -12,10 +14,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.notzeroranger.MainActivity
 import com.example.notzeroranger.SettingsActivity
 import com.example.notzeroranger.database.DemoDbHeper
-import com.example.notzeroranger.service.GameSound
+import com.example.notzeroranger.service.PlayerScore
+import com.example.notzeroranger.service.RetrofitInstance
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
@@ -24,6 +29,7 @@ import java.io.ObjectOutputStream
 
 
 class HighScoreActivity : AppCompatActivity() {
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -88,10 +94,41 @@ class HighScoreActivity : AppCompatActivity() {
             println(e.message)
         }
 
-        val customAdapter = HighScoreAdapter(highScoreList)
+        var customAdapter = HighScoreAdapter(highScoreList)
         //initiate recycler view
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
         recyclerView.adapter = customAdapter
         recyclerView.layoutManager = LinearLayoutManager(applicationContext)
+
+        val global: Button = findViewById(R.id.global)
+        var globalHighScore = ArrayList<PlayerScore>()
+        global.setOnClickListener {
+            RetrofitInstance.api.getData(10).enqueue(object : Callback<ArrayList<PlayerScore>> {
+                override fun onResponse(call: Call<ArrayList<PlayerScore>>, response: Response<ArrayList<PlayerScore>>) {
+                    if (response.isSuccessful) {
+                        val data = response.body()
+                        Log.d("RESPONSE", "Score: ${data.toString()}")
+                        if (data != null) {
+                            globalHighScore = data
+                        }
+                    } else {
+                        // Xử lý lỗi
+                    }
+                }
+
+                override fun onFailure(call: Call<ArrayList<PlayerScore>>, t: Throwable) {
+                    // Xử lý khi gặp lỗi kết nối
+                }
+            })
+            globalHighScore.sortWith(compareByDescending { it.score })
+            for (score in globalHighScore) {
+                print(score)
+            }
+
+            customAdapter = HighScoreAdapter(highScoreList)
+            //initiate recycler view
+            recyclerView.adapter = customAdapter
+            recyclerView.layoutManager = LinearLayoutManager(applicationContext)
+        }
     }
 }
