@@ -11,6 +11,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -20,6 +21,10 @@ import com.example.notzeroranger.GameOverActivity
 import com.example.notzeroranger.R
 import com.example.notzeroranger.database.DemoDbHeper
 import com.example.notzeroranger.database.HighScore
+import com.example.notzeroranger.service.RetrofitInstance
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import kotlin.random.Random
 
 class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
@@ -220,6 +225,27 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
                         values.put("score", player.getPoints())
                         db.insert(HighScore.PlayerEntry.TABLE_NAME, "", values)
                         //db.delete(HighScore.PlayerEntry.TABLE_NAME,null,null)
+                        val highscore = com.example.notzeroranger.highscore.HighScore(
+                            Player.name,
+                            player.getPoints().toLong()
+                        )
+
+                        // push new score to remote database
+                        RetrofitInstance.api.pushData(highscore).enqueue(object :
+                            Callback<com.example.notzeroranger.highscore.HighScore> {
+                            override fun onResponse(call: Call<com.example.notzeroranger.highscore.HighScore>, response: Response<com.example.notzeroranger.highscore.HighScore>) {
+                                if (response.isSuccessful) {
+                                    val data = response.body()
+                                    Log.d("SCORE", "Pushed data successfully: ${data.toString()}")
+                                } else {
+                                    Log.d("SCORE", "Failed to push data")
+                                }
+                            }
+
+                            override fun onFailure(call: Call<com.example.notzeroranger.highscore.HighScore>, t: Throwable) {
+                                Log.d("SCORE", "${t.message}")
+                            }
+                        })
                         db.close()
                     }
                 }

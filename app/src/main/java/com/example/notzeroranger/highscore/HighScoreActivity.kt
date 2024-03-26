@@ -21,9 +21,12 @@ import com.example.notzeroranger.service.RetrofitInstance
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.BufferedReader
+import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStreamReader
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
@@ -94,17 +97,54 @@ class HighScoreActivity : AppCompatActivity() {
             println(e.message)
         }
 
+        // update local score view
         var customAdapter = HighScoreAdapter(highScoreList)
-        //initiate recycler view
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
         recyclerView.adapter = customAdapter
         recyclerView.layoutManager = LinearLayoutManager(applicationContext)
 
+        // save state if local score pushed to remote database
+        val sharedPref = this.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        val state = sharedPref.getBoolean("state", false)
+        if (!state) {
+            with(sharedPref.edit()) {
+                putBoolean("state", true)
+                apply()
+            }
+
+            //push local score into remote database
+            highScoreList.forEach {
+                RetrofitInstance.api.pushData(it).enqueue(object : Callback<HighScore> {
+                    override fun onResponse(call: Call<HighScore>, response: Response<HighScore>) {
+                        if (response.isSuccessful) {
+                            val data = response.body()
+                            Log.d("SCORE", "Pushed data successfully: ${data.toString()}")
+                        } else {
+                            Log.d("SCORE", "Failed to push data")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<HighScore>, t: Throwable) {
+                        Log.d("SCORE", "${t.message}")
+                    }
+                })
+            }
+        }
+
+        // reupdate local score view when clicked
+        val local: Button = findViewById(R.id.local)
+        local.setOnClickListener {
+            customAdapter = HighScoreAdapter(highScoreList)
+            recyclerView.adapter = customAdapter
+            recyclerView.layoutManager = LinearLayoutManager(applicationContext)
+        }
+
+        // get score from remote database
         val global: Button = findViewById(R.id.global)
-        var globalHighScore = ArrayList<PlayerScore>()
+        var globalHighScore = ArrayList<HighScore>()
         global.setOnClickListener {
-            RetrofitInstance.api.getData(10).enqueue(object : Callback<ArrayList<PlayerScore>> {
-                override fun onResponse(call: Call<ArrayList<PlayerScore>>, response: Response<ArrayList<PlayerScore>>) {
+            RetrofitInstance.api.getData(10, "score.desc").enqueue(object : Callback<ArrayList<HighScore>> {
+                override fun onResponse(call: Call<ArrayList<HighScore>>, response: Response<ArrayList<HighScore>>) {
                     if (response.isSuccessful) {
                         val data = response.body()
                         Log.d("RESPONSE", "Score: ${data.toString()}")
@@ -112,23 +152,31 @@ class HighScoreActivity : AppCompatActivity() {
                             globalHighScore = data
                         }
                     } else {
-                        // Xử lý lỗi
+                        Log.d("SCORE", "Failed to get data")
                     }
                 }
 
-                override fun onFailure(call: Call<ArrayList<PlayerScore>>, t: Throwable) {
-                    // Xử lý khi gặp lỗi kết nối
+                override fun onFailure(call: Call<ArrayList<HighScore>>, t: Throwable) {
+                    Log.d("SCORE", "${t.message}")
                 }
             })
-            globalHighScore.sortWith(compareByDescending { it.score })
-            for (score in globalHighScore) {
-                print(score)
-            }
 
-            customAdapter = HighScoreAdapter(highScoreList)
-            //initiate recycler view
+            //merge with local score
+            globalHighScore += highScoreList
+            for (score in globalHighScore) println(score.toString())
+
+            // update global score view
+            customAdapter = HighScoreAdapter(globalHighScore)
             recyclerView.adapter = customAdapter
             recyclerView.layoutManager = LinearLayoutManager(applicationContext)
+        }
+    }
+
+    fun saveStateOfLocalScore(context: Context, state: Boolean) {
+        val sharedPref = context.getSharedPreferences("state", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putBoolean("pushed", state)
+            apply()
         }
     }
 }
