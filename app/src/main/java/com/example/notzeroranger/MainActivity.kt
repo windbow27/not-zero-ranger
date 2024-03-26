@@ -50,6 +50,13 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // open github web-view
+        val aboutButton: Button = findViewById(R.id.aboutButton)
+        aboutButton.setOnClickListener {
+            val intent = Intent(this, AboutActivity::class.java)
+            startActivity(intent)
+        }
+
         // quit game
         val quitButton: Button = findViewById(R.id.quitButton)
         quitButton.setOnClickListener {

@@ -17,9 +17,10 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.842" />
+        app:layout_constraintVertical_bias="0.879" />
 
     <Button
         android:id="@+id/retryButton"
@@ -33,13 +34,12 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/returnButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.971" />
+        app:layout_constraintTop_toBottomOf="@+id/scoreTextView"
+        app:layout_constraintVertical_bias="0.726" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/gameover"
         android:layout_width="243dp"
         android:layout_height="142dp"
         android:text="@string/game_over"
@@ -52,5 +52,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.284" />
+
+    <TextView
+        android:id="@+id/scoreTextView"
+        android:layout_width="315dp"
+        android:layout_height="69dp"
+        android:layout_marginTop="80dp"
+        android:textAlignment="center"
+        android:textColor="#FF9800"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/gameover" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

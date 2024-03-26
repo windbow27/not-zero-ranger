@@ -19,4 +19,5 @@
     <string name="music">Music</string>
     <string name="health">Health</string>
     <string name="view_score">View score</string>
+    <string name="about">ABOUT</string>
 </resources>

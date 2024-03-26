@@ -20,8 +20,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.777" />
+        app:layout_constraintTop_toBottomOf="@+id/recycler_view"
+        app:layout_constraintVertical_bias="0.198" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
@@ -51,30 +51,30 @@
         app:layout_constraintVertical_bias="0.519" />
 
     <Button
-        android:id="@+id/local"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:backgroundTint="@color/orange"
-        android:text="Local"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.232" />
-
-    <Button
         android:id="@+id/global"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/orange"
         android:text="Global"
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/recycler_view"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.485"
+        app:layout_constraintHorizontal_bias="0.455"
         app:layout_constraintStart_toEndOf="@+id/local"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.232" />
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintVertical_bias="0.466" />
+
+    <Button
+        android:id="@+id/local"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:backgroundTint="@color/orange"
+        android:text="Local"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/recycler_view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintVertical_bias="0.466" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

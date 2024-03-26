@@ -3,6 +3,7 @@ package com.example.notzeroranger
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.notzeroranger.service.GameOverSound
 import com.example.notzeroranger.service.GameSound
@@ -14,6 +15,10 @@ class GameOverActivity : AppCompatActivity() {
 
         stopService(Intent(this, GameSound::class.java))
         startService(Intent(this, GameOverSound::class.java))
+
+        val score = intent.getIntExtra("SCORE", 0)
+        val scoreTextView: TextView = findViewById(R.id.scoreTextView)
+        "Score: $score".also { scoreTextView.text = it }
 
         // retry
         val retryButton = findViewById<Button>(R.id.retryButton)
