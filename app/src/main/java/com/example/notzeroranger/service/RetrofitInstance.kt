@@ -1,14 +1,13 @@
 package com.example.notzeroranger.service
 
+import com.example.notzeroranger.Utils
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-    private const val BASE_URL: String = "https://tpsuwflkyyzqgdkqexew.supabase.co/rest/v1/"
-
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(Utils.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
