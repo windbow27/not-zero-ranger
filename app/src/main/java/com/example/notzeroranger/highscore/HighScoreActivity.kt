@@ -8,6 +8,7 @@ import android.database.Cursor
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -131,9 +132,12 @@ class HighScoreActivity : AppCompatActivity() {
             }
         }
 
-        // reupdate local score view when clicked
+        val message: TextView = findViewById(R.id.message)
+
+        // re-update local score view when clicked
         val local: Button = findViewById(R.id.local)
         local.setOnClickListener {
+            message.visibility = TextView.INVISIBLE
             customAdapter = HighScoreAdapter(highScoreList)
             recyclerView.adapter = customAdapter
             recyclerView.layoutManager = LinearLayoutManager(applicationContext)
@@ -154,29 +158,24 @@ class HighScoreActivity : AppCompatActivity() {
                     } else {
                         Log.d("SCORE", "Failed to get data")
                     }
+
+                    // update global score view
+                    customAdapter = HighScoreAdapter(globalHighScore)
+                    recyclerView.adapter = customAdapter
+                    recyclerView.layoutManager = LinearLayoutManager(applicationContext)
                 }
 
+                // show error message if no internet connection
                 override fun onFailure(call: Call<ArrayList<HighScore>>, t: Throwable) {
-                    Log.d("SCORE", "${t.message}")
+                    Log.d("RESPONSE", "${t.message}")
+
+                    // update global score view to null
+                    customAdapter = HighScoreAdapter(globalHighScore)
+                    recyclerView.adapter = customAdapter
+                    recyclerView.layoutManager = LinearLayoutManager(applicationContext)
+                    message.visibility = TextView.VISIBLE
                 }
             })
-
-            //merge with local score
-            globalHighScore += highScoreList
-            for (score in globalHighScore) println(score.toString())
-
-            // update global score view
-            customAdapter = HighScoreAdapter(globalHighScore)
-            recyclerView.adapter = customAdapter
-            recyclerView.layoutManager = LinearLayoutManager(applicationContext)
-        }
-    }
-
-    fun saveStateOfLocalScore(context: Context, state: Boolean) {
-        val sharedPref = context.getSharedPreferences("state", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            putBoolean("pushed", state)
-            apply()
         }
     }
 }
