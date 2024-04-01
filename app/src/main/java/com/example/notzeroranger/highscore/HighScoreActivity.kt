@@ -17,17 +17,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.notzeroranger.SettingsActivity
 import com.example.notzeroranger.database.DemoDbHeper
-import com.example.notzeroranger.service.PlayerScore
 import com.example.notzeroranger.service.RetrofitInstance
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.BufferedReader
-import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStreamReader
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
@@ -149,6 +145,10 @@ class HighScoreActivity : AppCompatActivity() {
         global.setOnClickListener {
             RetrofitInstance.api.getData(10, "score.desc").enqueue(object : Callback<ArrayList<HighScore>> {
                 override fun onResponse(call: Call<ArrayList<HighScore>>, response: Response<ArrayList<HighScore>>) {
+                    message.text = "Loading..."
+                    message.visibility = TextView.VISIBLE
+                    Log.d("STATUS", message.text.toString())
+
                     if (response.isSuccessful) {
                         val data = response.body()
                         Log.d("RESPONSE", "Score: ${data.toString()}")
@@ -156,8 +156,12 @@ class HighScoreActivity : AppCompatActivity() {
                             globalHighScore = data
                         }
                     } else {
-                        Log.d("SCORE", "Failed to get data")
+                        Log.d("RESPONSE", "Failed to get data")
                     }
+
+                    message.text = "No internet connection"
+                    message.visibility = TextView.INVISIBLE
+                    Log.d("STATUS", message.text.toString())
 
                     // update global score view
                     customAdapter = HighScoreAdapter(globalHighScore)
