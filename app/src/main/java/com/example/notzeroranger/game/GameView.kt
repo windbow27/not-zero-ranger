@@ -5,26 +5,26 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.*
 import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.res.ResourcesCompat
 import com.example.notzeroranger.GameActivity
 import com.example.notzeroranger.GameOverActivity
+import com.example.notzeroranger.MainActivity
 import com.example.notzeroranger.R
 import com.example.notzeroranger.database.DemoDbHeper
 import com.example.notzeroranger.database.HighScore
+import com.example.notzeroranger.service.GameSound
 import com.example.notzeroranger.service.RetrofitInstance
+import com.example.notzeroranger.service.ThemeSound
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import kotlin.math.abs
 import kotlin.random.Random
 
 class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
@@ -74,6 +74,15 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (event != null && event.action == MotionEvent.ACTION_DOWN) {
+            gameLoopThread?.handlePauseItemClick(event.x, event.y)
+        }
+        if (event != null && event.action == MotionEvent.ACTION_DOWN) {
+            gameLoopThread?.handleResumeItemClick(event.x, event.y)
+        }
+        if (event != null && event.action == MotionEvent.ACTION_DOWN) {
+            gameLoopThread?.handleMenuItemClick(event.x, event.y)
+        }
         player.moveTo(event?.x ?: 0f, event?.y ?: 0f)
         return true
     }
@@ -81,6 +90,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 
 class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val context: Context, private val player: Player, private val enemies: MutableList<Enemy>) : Thread() {
     private var running = false
+    private var paused = false
     private val displayMetrics = context.resources.displayMetrics
 
     private val background1 = BitmapFactory.decodeResource(context.resources, R.drawable.stage_background)
@@ -92,6 +102,10 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
     private val bigEnemyPoints = 200
     private var lastWaveSpawnTime = System.currentTimeMillis()
     private val waveSpawnCooldown = 5600
+
+    private var speechItemEffectTime: Long = 0
+    private val speechItemDuration = 20000
+    private val items = mutableListOf<Item>()
 
     private val originalHealthBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.health)
     private val originalBlankBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.blank)
@@ -166,96 +180,278 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
         }
     }
 
+    private lateinit var pauseButton: Bitmap
+    private lateinit var pauseLayout: Bitmap
+    private lateinit var menuButton: Bitmap
+    private lateinit var resumeButton: Bitmap
+    private  lateinit var pauseItem: Bitmap
+    private var pauseButtonRect: Rect = Rect()
+    private var pauseLayoutButtonRect: Rect = Rect()
+    private var menuButtonRect: Rect = Rect()
+    private var resumeButtonRect: Rect = Rect()
+    private var pauseItemRect: Rect = Rect()
+
+    init {
+        // Load the pause button image
+        pauseButton = BitmapFactory.decodeResource(context.resources, R.drawable.pause_logo)
+        pauseLayout = BitmapFactory.decodeResource(context.resources, R.drawable.backgroundmenu)
+        pauseItem = BitmapFactory.decodeResource(context.resources, R.drawable.logopause)
+        menuButton = BitmapFactory.decodeResource(context.resources, R.drawable.menu)
+        resumeButton = BitmapFactory.decodeResource(context.resources, R.drawable.resume)
+    }
+
+    fun drawPauseItem(canvas: Canvas) {
+        // Vẽ pauseButton tại vị trí mong muốn
+        if (::pauseButton.isInitialized) {
+            val centerX = (canvas.width - pauseButton.width) / 2
+            val centerY = 0 // Đặt bitmap ở đỉnh màn hình, nên Y = 0
+
+            // Đặt kích thước và vị trí của hình chữ nhật để vẽ bitmap ở giữa trên của màn hình
+            pauseButtonRect.set(
+                centerX,
+                centerY,
+                centerX + pauseButton.width,
+                centerY + pauseButton.height
+            )
+
+            // Vẽ bitmap vào vị trí đã tính toán
+            canvas.drawBitmap(pauseButton, null, pauseButtonRect, null)
+        }
+        if(paused){
+            if (::pauseLayout.isInitialized) {
+                val pauseLayoutWidth = canvas.width * 0.6f // Chỉnh tỉ lệ ảnh pauseLayout ở đây, ví dụ: 80% chiều rộng của canvas
+                val pauseLayoutHeight = pauseLayoutWidth * (pauseLayout.height.toFloat() / pauseLayout.width.toFloat())
+
+                val pauseLayoutX = (canvas.width - pauseLayoutWidth) / 2
+                val pauseLayoutY = (canvas.height - pauseLayoutHeight) / 2
+                pauseLayoutButtonRect.set(pauseLayoutX.toInt(),
+                    pauseLayoutY.toInt(), (pauseLayoutX + pauseLayoutWidth).toInt(), (pauseLayoutY + pauseLayoutHeight).toInt()
+                )
+                canvas.drawBitmap(pauseLayout, null, pauseLayoutButtonRect, null)
+
+                if(::pauseItem.isInitialized) {
+                    // Đặt pauseItem nằm trên pauseLayout
+                    val pauseItemWidth = pauseLayoutWidth * 0.9f // Ví dụ: Đặt pauseItem chiếm 50% chiều rộng của pauseLayout
+                    val pauseItemHeight = pauseItemWidth * (pauseItem.height.toFloat() / pauseItem.width.toFloat())
+
+                    val pauseItemX = pauseLayoutX + (pauseLayoutWidth - pauseItemWidth) / 2
+                    val pauseItemY = pauseLayoutY - pauseItemHeight // Đặt pauseItem nằm trên pauseLayout
+                    pauseItemRect.set(pauseItemX.toInt(), pauseItemY.toInt(), (pauseItemX + pauseItemWidth).toInt(), (pauseItemY + pauseItemHeight).toInt())
+                    canvas.drawBitmap(pauseItem, null, pauseItemRect, null)
+                }
+
+                // Đặt resumeButton vào trong pauseLayout
+                if (::resumeButton.isInitialized && ::menuButton.isInitialized) {
+                    val buttonSize = Math.min(resumeButton.width, menuButton.width) + 20 // Kích thước chung cho cả resumeButton và menuButton
+
+                    val resumeButtonX = pauseLayoutX + (pauseLayoutWidth - buttonSize * 2) / 2 // Chia không gian cho cả hai button
+                    val resumeButtonY = pauseLayoutY + (pauseLayoutHeight - buttonSize) / 2
+                    resumeButtonRect.set(resumeButtonX.toInt(), resumeButtonY.toInt(), (resumeButtonX + buttonSize).toInt(), (resumeButtonY + buttonSize).toInt())
+                    canvas.drawBitmap(resumeButton, null, resumeButtonRect, null)
+
+                    val menuButtonX = resumeButtonX + buttonSize // Đặt menuButton bên cạnh resumeButton
+                    val menuButtonY = resumeButtonY
+                    menuButtonRect.set(menuButtonX.toInt(), menuButtonY.toInt(), (menuButtonX + buttonSize).toInt(), (menuButtonY + buttonSize).toInt())
+                    canvas.drawBitmap(menuButton, null, menuButtonRect, null)
+                }
+            }
+
+        }
+    }
+
+    fun pauseGame() {
+        paused = true
+    }
+
+    fun resumeGame() {
+        paused = false
+    }
+
+    fun handleResumeItemClick(x: Float, y: Float) {
+        // Kiểm tra xem người dùng đã click vào mục pause hay không
+        if (resumeButtonRect.contains(x.toInt(), y.toInt())) {
+            resumeGame()
+        }
+    }
+
+
+    fun handlePauseItemClick(x: Float, y: Float) {
+        // Kiểm tra xem người dùng đã click vào mục pause hay không
+        if (pauseButtonRect.contains(x.toInt(), y.toInt())) {
+            pauseGame()
+        }
+    }
+
+    fun handleMenuItemClick(x: Float ,  y:Float) {
+        // Kiểm tra xem người dùng đã click vào mục pause hay không
+        if(menuButtonRect.contains(x.toInt(), y.toInt())) {
+            val gameSound = Intent(context, GameSound::class.java)
+            context.startService(gameSound)
+            val intent = Intent(context , MainActivity::class.java)
+            context.startActivity(intent)
+            context.stopService(gameSound)
+            val themeSound = Intent(context, ThemeSound::class.java)
+            context.startService(themeSound)
+        }
+    }
+
+
     override fun run() {
         while (running) {
-            val canvas = surfaceHolder.lockCanvas(null)
-            if (canvas != null) {
-                synchronized(surfaceHolder) {
-                    // Clear the canvas by drawing the moving background images
-                    canvas.drawBitmap(background1, null, RectF(0f, bg1y, canvas.width.toFloat(), bg1y + canvas.height), null)
-                    canvas.drawBitmap(background2, null, RectF(0f, bg2y, canvas.width.toFloat(), bg2y + canvas.height), null)
+            if(!paused){
+                val canvas = surfaceHolder.lockCanvas(null)
+                if (canvas != null) {
+                    synchronized(surfaceHolder) {
+                        // Clear the canvas by drawing the moving background images
+                        canvas.drawBitmap(background1, null, RectF(0f, bg1y, canvas.width.toFloat(), bg1y + canvas.height), null)
+                        canvas.drawBitmap(background2, null, RectF(0f, bg2y, canvas.width.toFloat(), bg2y + canvas.height), null)
 
-                    // Move the backgrounds
-                    bg1y += displayMetrics.heightPixels * 0.01f
-                    bg2y += displayMetrics.heightPixels * 0.01f
+                        // Move the backgrounds
+                        bg1y += displayMetrics.heightPixels * 0.01f
+                        bg2y += displayMetrics.heightPixels * 0.01f
 
-                    // If a background has moved off the screen, reset its position
-                    if (bg1y > canvas.height) {
-                        bg1y = -canvas.height.toFloat()
-                    }
-                    if (bg2y > canvas.height) {
-                        bg2y = -canvas.height.toFloat()
-                    }
-
-                    // Update game state
-                    player.moveTo(player.x, player.y)
-
-                    spawnEnemies(context, canvas.width, canvas.height)
-
-                    // Player is always shooting in the same direction
-                    player.shoot()
-                    player.update()
-
-                    player.checkCollision(enemies.filter { it.isAlive() })
-
-                    // Draw the game state to the canvas
-                    val iterator = enemies.iterator()
-                    while (iterator.hasNext()) {
-                        val enemy = iterator.next()
-                        enemy.updateBullets(canvas.height, canvas.width)
-                        enemy.drawBullets(canvas)
-                        if (enemy.isAlive()) {
-                            enemy.shoot()
-                            enemy.move()
-                            enemy.draw(canvas)
+                        // If a background has moved off the screen, reset its position
+                        if (bg1y > canvas.height) {
+                            bg1y = -canvas.height.toFloat()
                         }
-                        enemy.checkCollision(listOf(player))
-                        enemy.killIfOffscreen(canvas.height, canvas.width)
-                    }
+                        if (bg2y > canvas.height) {
+                            bg2y = -canvas.height.toFloat()
+                        }
 
-                    player.draw(canvas)
-                    drawPlayerStats(canvas)
+                        // Update game state
+                        player.moveTo(player.x, player.y)
 
-                    if (!player.isAlive()) {
-                        running = false
-                        val dbHelper = DemoDbHeper(context)
-                        val db = dbHelper.writableDatabase
-                        val values = ContentValues()
-                        values.put("name", Player.name)
-                        values.put("score", player.getPoints())
-                        db.insert(HighScore.PlayerEntry.TABLE_NAME, "", values)
-                        //db.delete(HighScore.PlayerEntry.TABLE_NAME,null,null)
-                        val highscore = com.example.notzeroranger.highscore.HighScore(
-                            Player.name,
-                            player.getPoints().toLong()
-                        )
+                        spawnEnemies(context, canvas.width, canvas.height)
 
-                        // push new score to remote database
-                        RetrofitInstance.api.pushData(highscore).enqueue(object :
-                            Callback<com.example.notzeroranger.highscore.HighScore> {
-                            override fun onResponse(call: Call<com.example.notzeroranger.highscore.HighScore>, response: Response<com.example.notzeroranger.highscore.HighScore>) {
-                                if (response.isSuccessful) {
-                                    val data = response.body()
-                                    Log.d("SCORE", "Pushed data successfully: ${data.toString()}")
+                        // Player is always shooting in the same direction
+                        player.shoot()
+                        player.update()
+
+                        player.checkCollision(enemies.filter { it.isAlive() })
+
+                        // Draw the game state to the canvas
+                        val iterator = enemies.iterator()
+                        while (iterator.hasNext()) {
+                            val enemy = iterator.next()
+                            enemy.updateBullets(canvas.height, canvas.width)
+                            enemy.drawBullets(canvas)
+                            if (enemy.isAlive()) {
+                                enemy.shoot()
+                                enemy.move()
+                                enemy.draw(canvas)
+                            } else if(!enemy.enemydie){
+                                val newItemX = enemy.x
+                                val newItemY = enemy.y
+                                val randomValue = (1..100).random()
+                                val newItem = if (randomValue <= 3) {
+                                    HealthItem(context, newItemX, newItemY, 50f, 50f, player)
+                                } else if (randomValue <= 5){
+                                    SpeechItem(context, newItemX, newItemY, 50f, 50f, player)
+                                }
+                                else {
+                                    null
+                                }
+                                if (newItem != null) {
+                                    items.add(newItem)
+                                }
+                                println("enemy died")
+                                enemy.enemydie = true
+                            }
+                            enemy.checkCollision(listOf(player))
+                            enemy.killIfOffscreen(canvas.height, canvas.width)
+                        }
+
+                        var eatenItemType: String? = null
+
+                        val itemIterator = items.iterator()
+                        while (itemIterator.hasNext()) {
+                            val item = itemIterator.next()
+                            item.move() // Di chuyển item
+                            item.draw(canvas) // Vẽ item
+                            if (item.isOffscreen(canvas.height, canvas.width)) {
+                                itemIterator.remove()
+                            }
+                            val touchRadius = 50 // Khoảng dấu hiệu
+
+                            if (abs(player.x - item.x) < touchRadius && abs(player.y - item.y) < touchRadius) {
+                                eatenItemType = if (item is HealthItem) {
+                                    "HealthItem"
+                                } else (if (item is SpeechItem) {
+                                    "SpeechItem"
                                 } else {
-                                    Log.d("SCORE", "Failed to push data")
+                                    null
+                                }).toString()
+                                itemIterator.remove()
+                            }
+                        }
+
+                        if (eatenItemType != null) {
+                            when (eatenItemType) {
+                                "HealthItem" -> {
+                                    // Xử lý khi người chơi ăn HealthItem
+                                    if(player.health < 60f){
+                                        player.health += 10f
+                                    }
+                                }
+                                "SpeechItem" -> {
+                                    // Xử lý khi người chơi ăn SpeechItem
+                                    player.speed += 2f
+                                    println(player.speed)
+                                    speechItemEffectTime = System.currentTimeMillis()
                                 }
                             }
+                        }
 
-                            override fun onFailure(call: Call<com.example.notzeroranger.highscore.HighScore>, t: Throwable) {
-                                Log.d("SCORE", "${t.message}")
-                            }
-                        })
-                        db.close()
+                        if (System.currentTimeMillis() - speechItemEffectTime > speechItemDuration) {
+                            // Khôi phục tốc độ ban đầu của người chơi
+                            player.speed = maxOf(player.speed - 2f, 20f)
+                        }
+
+                        player.draw(canvas)
+                        drawPlayerStats(canvas)
+                        drawPauseItem(canvas)
+
+                        if (!player.isAlive()) {
+                            running = false
+                            val dbHelper = DemoDbHeper(context)
+                            val db = dbHelper.writableDatabase
+                            val values = ContentValues()
+                            values.put("name", Player.name)
+                            values.put("score", player.getPoints())
+                            db.insert(HighScore.PlayerEntry.TABLE_NAME, "", values)
+                            //db.delete(HighScore.PlayerEntry.TABLE_NAME,null,null)
+                            val highscore = com.example.notzeroranger.highscore.HighScore(
+                                Player.name,
+                                player.getPoints().toLong()
+                            )
+
+                            // push new score to remote database
+                            RetrofitInstance.api.pushData(highscore).enqueue(object :
+                                Callback<com.example.notzeroranger.highscore.HighScore> {
+                                override fun onResponse(call: Call<com.example.notzeroranger.highscore.HighScore>, response: Response<com.example.notzeroranger.highscore.HighScore>) {
+                                    if (response.isSuccessful) {
+                                        val data = response.body()
+                                        Log.d("SCORE", "Pushed data successfully: ${data.toString()}")
+                                    } else {
+                                        Log.d("SCORE", "Failed to push data")
+                                    }
+                                }
+
+                                override fun onFailure(call: Call<com.example.notzeroranger.highscore.HighScore>, t: Throwable) {
+                                    Log.d("SCORE", "${t.message}")
+                                }
+                            })
+                            db.close()
+                        }
                     }
+                    surfaceHolder.unlockCanvasAndPost(canvas)
                 }
-                surfaceHolder.unlockCanvasAndPost(canvas)
-            }
-            if (!running) {
-                val intent = Intent(context, GameOverActivity::class.java)
-                intent.putExtra("SCORE", player.getPoints())
-                context.startActivity(intent)
-                break
+                if (!running) {
+                    val intent = Intent(context, GameOverActivity::class.java)
+                    intent.putExtra("SCORE", player.getPoints())
+                    context.startActivity(intent)
+                    break
+                }
             }
         }
     }
