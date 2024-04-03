@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.res.ResourcesCompat
 import com.example.notzeroranger.GameActivity
 import com.example.notzeroranger.GameOverActivity
@@ -103,8 +102,8 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
     private var lastWaveSpawnTime = System.currentTimeMillis()
     private val waveSpawnCooldown = 5600
 
-    private var speechItemEffectTime: Long = 0
-    private val speechItemDuration = 20000
+    private var speedItemEffectTime: Long = 0
+    private val speedItemDuration = 20000
     private val items = mutableListOf<Item>()
 
     private val originalHealthBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.health)
@@ -192,34 +191,50 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
     private var pauseItemRect: Rect = Rect()
 
     init {
+        val buttonWidth = 50
+        val buttonHeight = 50
         // Load the pause button image
-        pauseButton = BitmapFactory.decodeResource(context.resources, R.drawable.pause_logo)
-        pauseLayout = BitmapFactory.decodeResource(context.resources, R.drawable.backgroundmenu)
-        pauseItem = BitmapFactory.decodeResource(context.resources, R.drawable.logopause)
-        menuButton = BitmapFactory.decodeResource(context.resources, R.drawable.menu)
-        resumeButton = BitmapFactory.decodeResource(context.resources, R.drawable.resume)
+        pauseLayout = BitmapFactory.decodeResource(context.resources, R.drawable.background_menu)
+        pauseItem = BitmapFactory.decodeResource(context.resources, R.drawable.pause_title)
+        pauseButton = Bitmap.createScaledBitmap(
+            BitmapFactory.decodeResource(context.resources, R.drawable.pause_button),
+            buttonWidth,
+            buttonHeight,
+            true
+        )
+        menuButton = Bitmap.createScaledBitmap(
+            BitmapFactory.decodeResource(context.resources, R.drawable.menu_button),
+            buttonWidth,
+            buttonHeight,
+            true
+        )
+
+        resumeButton = Bitmap.createScaledBitmap(
+            BitmapFactory.decodeResource(context.resources, R.drawable.resume_button),
+            buttonWidth,
+            buttonHeight,
+            true
+        )
     }
 
-    fun drawPauseItem(canvas: Canvas) {
-        // Vẽ pauseButton tại vị trí mong muốn
+    private fun drawPauseItem(canvas: Canvas) {
+        // draw the pause button
         if (::pauseButton.isInitialized) {
-            val centerX = (canvas.width - pauseButton.width) / 2
-            val centerY = 0 // Đặt bitmap ở đỉnh màn hình, nên Y = 0
+            val centerX = 15
+            val centerY = 100
 
-            // Đặt kích thước và vị trí của hình chữ nhật để vẽ bitmap ở giữa trên của màn hình
             pauseButtonRect.set(
                 centerX,
                 centerY,
-                centerX + pauseButton.width,
+                centerX + pauseButton.width ,
                 centerY + pauseButton.height
             )
 
-            // Vẽ bitmap vào vị trí đã tính toán
             canvas.drawBitmap(pauseButton, null, pauseButtonRect, null)
         }
         if(paused){
             if (::pauseLayout.isInitialized) {
-                val pauseLayoutWidth = canvas.width * 0.6f // Chỉnh tỉ lệ ảnh pauseLayout ở đây, ví dụ: 80% chiều rộng của canvas
+                val pauseLayoutWidth = canvas.width * 0.6f
                 val pauseLayoutHeight = pauseLayoutWidth * (pauseLayout.height.toFloat() / pauseLayout.width.toFloat())
 
                 val pauseLayoutX = (canvas.width - pauseLayoutWidth) / 2
@@ -230,28 +245,32 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
                 canvas.drawBitmap(pauseLayout, null, pauseLayoutButtonRect, null)
 
                 if(::pauseItem.isInitialized) {
-                    // Đặt pauseItem nằm trên pauseLayout
-                    val pauseItemWidth = pauseLayoutWidth * 0.9f // Ví dụ: Đặt pauseItem chiếm 50% chiều rộng của pauseLayout
+                    // place the pauseItem inside the pauseLayout
+                    val pauseItemWidth = pauseLayoutWidth * 0.9f
                     val pauseItemHeight = pauseItemWidth * (pauseItem.height.toFloat() / pauseItem.width.toFloat())
 
                     val pauseItemX = pauseLayoutX + (pauseLayoutWidth - pauseItemWidth) / 2
-                    val pauseItemY = pauseLayoutY - pauseItemHeight // Đặt pauseItem nằm trên pauseLayout
+                    val pauseItemY = pauseLayoutY - pauseItemHeight
                     pauseItemRect.set(pauseItemX.toInt(), pauseItemY.toInt(), (pauseItemX + pauseItemWidth).toInt(), (pauseItemY + pauseItemHeight).toInt())
                     canvas.drawBitmap(pauseItem, null, pauseItemRect, null)
                 }
 
                 // Đặt resumeButton vào trong pauseLayout
                 if (::resumeButton.isInitialized && ::menuButton.isInitialized) {
-                    val buttonSize = Math.min(resumeButton.width, menuButton.width) + 20 // Kích thước chung cho cả resumeButton và menuButton
+                    val buttonSize = resumeButton.width.coerceAtMost(menuButton.width) + 20
 
-                    val resumeButtonX = pauseLayoutX + (pauseLayoutWidth - buttonSize * 2) / 2 // Chia không gian cho cả hai button
+                    val resumeButtonX = pauseLayoutX + (pauseLayoutWidth - buttonSize * 2) / 2 - 25f
                     val resumeButtonY = pauseLayoutY + (pauseLayoutHeight - buttonSize) / 2
                     resumeButtonRect.set(resumeButtonX.toInt(), resumeButtonY.toInt(), (resumeButtonX + buttonSize).toInt(), (resumeButtonY + buttonSize).toInt())
                     canvas.drawBitmap(resumeButton, null, resumeButtonRect, null)
 
-                    val menuButtonX = resumeButtonX + buttonSize // Đặt menuButton bên cạnh resumeButton
-                    val menuButtonY = resumeButtonY
-                    menuButtonRect.set(menuButtonX.toInt(), menuButtonY.toInt(), (menuButtonX + buttonSize).toInt(), (menuButtonY + buttonSize).toInt())
+                    val menuButtonX = resumeButtonX + buttonSize + 50f // menuButton next to resumeButton
+                    menuButtonRect.set(
+                        menuButtonX.toInt(),
+                        resumeButtonY.toInt(),
+                        (menuButtonX + buttonSize).toInt(),
+                        (resumeButtonY + buttonSize).toInt()
+                    )
                     canvas.drawBitmap(menuButton, null, menuButtonRect, null)
                 }
             }
@@ -259,31 +278,21 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
         }
     }
 
-    fun pauseGame() {
-        paused = true
-    }
-
-    fun resumeGame() {
-        paused = false
-    }
-
     fun handleResumeItemClick(x: Float, y: Float) {
-        // Kiểm tra xem người dùng đã click vào mục pause hay không
         if (resumeButtonRect.contains(x.toInt(), y.toInt())) {
-            resumeGame()
+            paused = !paused
         }
     }
 
 
     fun handlePauseItemClick(x: Float, y: Float) {
-        // Kiểm tra xem người dùng đã click vào mục pause hay không
         if (pauseButtonRect.contains(x.toInt(), y.toInt())) {
-            pauseGame()
+            paused = !paused
         }
     }
 
     fun handleMenuItemClick(x: Float ,  y:Float) {
-        // Kiểm tra xem người dùng đã click vào mục pause hay không
+        // check if the menu button is clicked
         if(menuButtonRect.contains(x.toInt(), y.toInt())) {
             val gameSound = Intent(context, GameSound::class.java)
             context.startService(gameSound)
@@ -339,14 +348,16 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
                                 enemy.shoot()
                                 enemy.move()
                                 enemy.draw(canvas)
-                            } else if(!enemy.enemydie){
+                            } else if(!enemy.isEnemyDead){
                                 val newItemX = enemy.x
                                 val newItemY = enemy.y
                                 val randomValue = (1..100).random()
                                 val newItem = if (randomValue <= 3) {
                                     HealthItem(context, newItemX, newItemY, 50f, 50f, player)
                                 } else if (randomValue <= 5){
-                                    SpeechItem(context, newItemX, newItemY, 50f, 50f, player)
+                                    SpeedItem(context, newItemX, newItemY, 50f, 50f, player)
+                                } else if (randomValue <= 7){
+                                    BombItem(context, newItemX, newItemY, 50f, 50f, player)
                                 }
                                 else {
                                     null
@@ -354,8 +365,8 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
                                 if (newItem != null) {
                                     items.add(newItem)
                                 }
-                                println("enemy died")
-                                enemy.enemydie = true
+                                // println("enemy died")
+                                enemy.isEnemyDead = true
                             }
                             enemy.checkCollision(listOf(player))
                             enemy.killIfOffscreen(canvas.height, canvas.width)
@@ -366,20 +377,28 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
                         val itemIterator = items.iterator()
                         while (itemIterator.hasNext()) {
                             val item = itemIterator.next()
-                            item.move() // Di chuyển item
+                            item.move()
                             item.draw(canvas) // Vẽ item
                             if (item.isOffscreen(canvas.height, canvas.width)) {
                                 itemIterator.remove()
                             }
-                            val touchRadius = 50 // Khoảng dấu hiệu
+                            val touchRadius = 50
 
                             if (abs(player.x - item.x) < touchRadius && abs(player.y - item.y) < touchRadius) {
                                 eatenItemType = if (item is HealthItem) {
                                     "HealthItem"
-                                } else (if (item is SpeechItem) {
-                                    "SpeechItem"
-                                } else {
-                                    null
+                                } else (when (item) {
+                                    is SpeedItem -> {
+                                        "SpeedItem"
+                                    }
+
+                                    is BombItem -> {
+                                        "BombItem"
+                                    }
+
+                                    else -> {
+                                        null
+                                    }
                                 }).toString()
                                 itemIterator.remove()
                             }
@@ -388,23 +407,29 @@ class GameLoopThread(private val surfaceHolder: SurfaceHolder, private val conte
                         if (eatenItemType != null) {
                             when (eatenItemType) {
                                 "HealthItem" -> {
-                                    // Xử lý khi người chơi ăn HealthItem
                                     if(player.health < 60f){
                                         player.health += 10f
                                     }
                                 }
-                                "SpeechItem" -> {
-                                    // Xử lý khi người chơi ăn SpeechItem
-                                    player.speed += 2f
+                                "SpeedItem" -> {
+                                    // increase player speed
+                                    player.speed += 10f
                                     println(player.speed)
-                                    speechItemEffectTime = System.currentTimeMillis()
+                                    speedItemEffectTime = System.currentTimeMillis()
+                                }
+                                "BombItem" -> {
+                                    // destroy all enemies
+                                    enemies.forEach { it.health = 0f }
+                                }
+                                else -> {
+                                    println("Unknown item type")
                                 }
                             }
                         }
 
-                        if (System.currentTimeMillis() - speechItemEffectTime > speechItemDuration) {
-                            // Khôi phục tốc độ ban đầu của người chơi
-                            player.speed = maxOf(player.speed - 2f, 20f)
+                        if (System.currentTimeMillis() - speedItemEffectTime > speedItemDuration) {
+                            // return player speed to normal
+                            player.speed = maxOf(player.speed - 10f, 20f)
                         }
 
                         player.draw(canvas)

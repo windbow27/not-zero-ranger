@@ -14,7 +14,7 @@ open class GameObject(var x: Float, var y: Float, open var width: Float, var hei
 
     open fun reduceHealth(bullet: Bullet) {
         health -= bullet.damage
-        Log.d("GameObject", "Health: $health")
+//        Log.d("GameObject", "Health: $health")
     }
 
     open fun isAlive(): Boolean {

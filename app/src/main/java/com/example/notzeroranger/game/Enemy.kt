@@ -11,12 +11,12 @@ import kotlin.random.Random
 open class Enemy(context: Context, x: Float, y: Float, width: Float, height: Float, val player: Player) : GameObject(x, y, width, height) {
     private val direction = Random.nextFloat() - 0.5f
     open var point = 100
-    open var enemydie = false
+    open var isEnemyDead = false
     override var bullets = mutableListOf<Bullet>()
     open var lastShotTime = System.currentTimeMillis()
     open val shootCooldown = 1000
     open val enemyDrawable = GifDrawable(context.resources, R.drawable.enemy_small)
-    var pointsAdded = false
+    private var pointsAdded = false
 
 
     private fun isOffscreen(screenHeight: Int, screenWidth: Int): Boolean {
@@ -75,7 +75,7 @@ class SmallEnemy(val context: Context, x:Float, y: Float, width: Float, height: 
     override var speed = 2f
     override var health = 50f
     override var point = 100
-    override var enemydie = false
+    override var isEnemyDead = false
     override var lastShotTime = System.currentTimeMillis()
     override val enemyDrawable = GifDrawable(context.resources, R.drawable.enemy_small)
 
@@ -93,7 +93,7 @@ class BigEnemy(val context: Context, x:Float, y: Float, width: Float, height: Fl
     override var speed = 1f
     override var health = 200f
     override var point = 200
-    override var enemydie = false
+    override var isEnemyDead = false
     override var lastShotTime = System.currentTimeMillis()
     override val enemyDrawable = GifDrawable(context.resources, R.drawable.enemy_big)
     override fun shoot() {

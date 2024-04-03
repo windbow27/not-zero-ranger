@@ -2,6 +2,7 @@ package com.example.notzeroranger.game
 
 import Player
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.RectF
 import com.example.notzeroranger.R
@@ -35,11 +36,17 @@ open class Item (context: Context, x: Float, y:Float, width: Float, height: Floa
 class HealthItem(val context: Context, x:Float, y: Float, width: Float, height: Float, player: Player) : Item(context, x, y, width, height, player) {
     override var speed = 3f
     override var touch = false
-    override val itemDrawable = GifDrawable(context.resources, R.drawable.healthitem)
+    override val itemDrawable = GifDrawable(context.resources, R.drawable.health_gif)
 }
 
-class SpeechItem(val context: Context, x:Float, y: Float, width: Float, height: Float, player: Player) : Item(context, x, y, width, height, player) {
+class SpeedItem(val context: Context, x:Float, y: Float, width: Float, height: Float, player: Player) : Item(context, x, y, width, height, player) {
     override var speed = 2f
     override var touch = false
-    override val itemDrawable = GifDrawable(context.resources, R.drawable.speech)
+    override val itemDrawable = GifDrawable(context.resources, R.drawable.speed_gif)
+}
+
+class BombItem(val context: Context, x:Float, y: Float, width: Float, height: Float, player: Player) : Item(context, x, y, width, height, player) {
+    override var speed = 2f
+    override var touch = false
+    override val itemDrawable = GifDrawable(context.resources, R.drawable.blank_gif)
 }
